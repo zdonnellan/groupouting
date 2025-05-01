@@ -5,8 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Idea Voting System</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <!-- Include Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+			apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
+			authDomain: "group-outing.firebaseapp.com",
+			projectId: "group-outing",
+			storageBucket: "group-outing.firebasestorage.app",
+			messagingSenderId: "819308473489",
+			appId: "1:819308473489:web:e7035118c4ec461143a330"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Your functions (addIdea, renderIdeas, etc.) go here
+        // For example:
+        async function addIdea() {
+            const ideaInput = document.getElementById('idea-input');
+            const ideaText = ideaInput.value.trim();
+
+            if (ideaText) {
+                const newIdea = { text: ideaText, votes: 0 };
+                await addDoc(collection(db, "ideas"), newIdea);
+                ideaInput.value = '';
+                renderIdeas();
+            }
+        }
+
+        async function renderIdeas() {
+            const ideaList = document.getElementById('idea-list');
+            ideaList.innerHTML = '';
+
+            const querySnapshot = await getDocs(collection(db, "ideas"));
+            querySnapshot.forEach((doc) => {
+                const idea = doc.data();
+                const id = doc.id;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${idea.text} (Votes: ${idea.votes})</span>
+                    <div>
+                        <button onclick="upvote('${id}')">Upvote</button>
+                        <button onclick="downvote('${id}')">Downvote</button>
+                    </div>
+                `;
+                ideaList.appendChild(li);
+            });
+        }
+
+        async function upvote(id) {
+            const ideaRef = doc(db, "ideas", id);
+            await updateDoc(ideaRef, {
+                votes: increment(1)
+            });
+            renderIdeas();
+        }
+
+        async function downvote(id) {
+            const ideaRef = doc(db, "ideas", id);
+            await updateDoc(ideaRef, {
+                votes: increment(-1)
+            });
+            renderIdeas();
+        }
+
+        // Load ideas on initial load
+        renderIdeas();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -17,6 +88,5 @@
         </div>
         <ul id="idea-list"></ul>
     </div>
-    <script src="script.js"></script>
 </body>
 </html>
