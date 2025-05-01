@@ -48,8 +48,10 @@
         console.log("Fetched Ideas:", ideasArray); // Log fetched ideas
 
         // Sort ideas by votes in descending order
+        console.log("Before Sorting:", ideasArray);
         ideasArray.sort((a, b) => b.votes - a.votes);
-
+        console.log("After Sorting:", ideasArray);
+        
         console.log("Sorted Ideas:", ideasArray); // Log sorted ideas
 
         // Render sorted ideas
