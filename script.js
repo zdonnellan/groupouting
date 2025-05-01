@@ -17,7 +17,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Define your functions and attach them to the window object
     window.addIdea = async function() {
         const ideaInput = document.getElementById('idea-input');
         const ideaText = ideaInput.value.trim();
@@ -45,7 +44,8 @@
             const idea = doc.data();
             ideasArray.push({ id: doc.id, ...idea }); // Push the idea along with its ID
         });
-        console.log(ideasArray); // Add this line before sorting to check the fetched ideas
+        console.log(ideasArray); // Check the fetched ideas
+        
         // Sort ideas by votes in descending order
         ideasArray.sort((a, b) => b.votes - a.votes);
         
