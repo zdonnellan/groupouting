@@ -1,106 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Idea Voting System</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon"> <!-- Include favicon -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-	    apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
-	    authDomain: "group-outing.firebaseapp.com",
-	    projectId: "group-outing",
-	    storageBucket: "group-outing.firebasestorage.app",
-	    messagingSenderId: "819308473489",
-	    appId: "1:819308473489:web:e7035118c4ec461143a330"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Define your functions
-        window.addIdea = async function() {
-            const ideaInput = document.getElementById('idea-input');
-            const ideaText = ideaInput.value.trim();
-
-            if (ideaText) {
-                const newIdea = { text: ideaText, votes: 0 };
-                await addDoc(collection(db, "ideas"), newIdea);
-                ideaInput.value = '';
-                renderIdeas();
-            }
-        };
-
-        window.renderIdeas = async function() {
-   	    const ideaList = document.getElementById('idea-list');
-            ideaList.innerHTML = '';
-            
-            const querySnapshot = await getDocs(collection(db, "ideas"));
-    	    const ideasArray = [];
-	    
-            querySnapshot.forEach((doc) => {
-                const idea = doc.data();
-                ideasArray.push({ id: doc.id, ...idea });
-            });
-
-            // Sort by votes descending
-            ideasArray.sort((a, b) => b.votes - a.votes);
-            
-            ideasArray.forEach((idea) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${idea.text} (Votes: ${idea.votes})</span>
-                    <div>
-                        <button onclick="upvote('${idea.id}')">Upvote</button>
-                        <button onclick="downvote('${idea.id}')">Downvote</button>
-                        <button onclick="deleteIdea('${idea.id}')">Delete</button>
-                    </div>
-                `;
-                ideaList.appendChild(li);
-            });
-        };
-
-        window.upvote = async function(id) {
-            const ideaRef = doc(db, "ideas", id);
-            await updateDoc(ideaRef, {
-                votes: increment(1)
-            });
-            renderIdeas();
-        };
-
-        window.downvote = async function(id) {
-            const ideaRef = doc(db, "ideas", id);
-            await updateDoc(ideaRef, {
-                votes: increment(-1)
-            });
-            renderIdeas();
-        };
-
-	window.deleteIdea = async function(id) {
-    	    const ideaRef = doc(db, "ideas", id);
-    	    await deleteDoc(ideaRef); // Delete the document from Firestore
-    	    renderIdeas(); // Re-render the ideas list
-	};
-
-        // Load ideas on initial load
-        renderIdeas();
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Idea Voting System</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
-    <div class="container">
-        <h1>Idea Voting System</h1>
-        <div id="idea-form">
-            <input type="text" id="idea-input" placeholder="Enter your idea..." required>
-            <button onclick="addIdea()">Submit Idea</button>
-        </div>
-        <ul id="idea-list"></ul>
+  <div class="container">
+    <h1>Idea Voting System</h1>
+    <div id="idea-form">
+      <input type="text" id="idea-input" placeholder="Enter your idea..." required />
+      <button onclick="addIdea()">Submit Idea</button>
     </div>
+    <ul id="idea-list"></ul>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      updateDoc,
+      doc,
+      increment,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
+      authDomain: "group-outing.firebaseapp.com",
+      projectId: "group-outing",
+      storageBucket: "group-outing.firebasestorage.app",
+      messagingSenderId: "819308473489",
+      appId: "1:819308473489:web:e7035118c4ec461143a330"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.addIdea = async function() {
+      const ideaInput = document.getElementById('idea-input');
+      const ideaText = ideaInput.value.trim();
+
+      if (ideaText) {
+        const newIdea = { text: ideaText, votes: 0 };
+        await addDoc(collection(db, "ideas"), newIdea);
+        ideaInput.value = '';
+        await renderIdeas();
+      }
+    };
+
+    window.renderIdeas = async function() {
+      const ideaList = document.getElementById('idea-list');
+      ideaList.innerHTML = '';
+
+      const querySnapshot = await getDocs(collection(db, "ideas"));
+      const ideasArray = [];
+
+      querySnapshot.forEach((doc) => {
+        const idea = doc.data();
+        ideasArray.push({ id: doc.id, ...idea });
+      });
+
+      ideasArray.sort((a, b) => b.votes - a.votes);
+
+      ideasArray.forEach((idea) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span>${idea.text} (Votes: ${idea.votes})</span>
+          <div>
+            <button onclick="upvote('${idea.id}')">Upvote</button>
+            <button onclick="downvote('${idea.id}')">Downvote</button>
+            <button onclick="deleteIdea('${idea.id}')">Delete</button>
+          </div>
+        `;
+        ideaList.appendChild(li);
+      });
+    };
+
+    window.upvote = async function(id) {
+      const ideaRef = doc(db, "ideas", id);
+      await updateDoc(ideaRef, {
+        votes: increment(1)
+      });
+      await renderIdeas();
+    };
+
+    window.downvote = async function(id) {
+      const ideaRef = doc(db, "ideas", id);
+      await updateDoc(ideaRef, {
+        votes: increment(-1)
+      });
+      await renderIdeas();
+    };
+
+    window.deleteIdea = async function(id) {
+      const ideaRef = doc(db, "ideas", id);
+      await deleteDoc(ideaRef);
+      await renderIdeas();
+    };
+
+    // Initial render
+    renderIdeas();
+  </script>
 </body>
 </html>
