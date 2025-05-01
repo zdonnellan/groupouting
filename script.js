@@ -6,6 +6,7 @@ const firebaseConfig = {
     storageBucket: "group-outing.firebasestorage.app",
     messagingSenderId: "819308473489",
     appId: "1:819308473489:web:e7035118c4ec461143a330"
+    measurementId: "G-WQ52CFHVQ1"
 };
 
 // Initialize Firebase
