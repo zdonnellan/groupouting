@@ -39,19 +39,28 @@
         };
 
         window.renderIdeas = async function() {
-            const ideaList = document.getElementById('idea-list');
+   	    const ideaList = document.getElementById('idea-list');
             ideaList.innerHTML = '';
-
+            
             const querySnapshot = await getDocs(collection(db, "ideas"));
+    	    const ideasArray = [];
+	    
             querySnapshot.forEach((doc) => {
                 const idea = doc.data();
-                const id = doc.id;
+                ideasArray.push({ id: doc.id, ...idea });
+            });
+
+            // Sort by votes descending
+            ideasArray.sort((a, b) => b.votes - a.votes);
+            
+            ideasArray.forEach((idea) => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>${idea.text} (Votes: ${idea.votes})</span>
                     <div>
-                        <button onclick="upvote('${id}')">Upvote</button>
-                        <button onclick="downvote('${id}')">Downvote</button>
+                        <button onclick="upvote('${idea.id}')">Upvote</button>
+                        <button onclick="downvote('${idea.id}')">Downvote</button>
+                        <button onclick="deleteIdea('${idea.id}')">Delete</button>
                     </div>
                 `;
                 ideaList.appendChild(li);
