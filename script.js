@@ -1,87 +1,78 @@
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
-    authDomain: "group-outing.firebaseapp.com",
-    projectId: "group-outing",
-    storageBucket: "group-outing.firebasestorage.app",
-    messagingSenderId: "819308473489",
-    appId: "1:819308473489:web:e7035118c4ec461143a330"
-    measurementId: "G-WQ52CFHVQ1"
-};
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
+        authDomain: "group-outing.firebaseapp.com",
+        projectId: "group-outing",
+        storageBucket: "group-outing.firebasestorage.app",
+        messagingSenderId: "819308473489",
+        appId: "1:819308473489:web:e7035118c4ec461143a330"
+    };
 
-let userVotes = {}; // To track user votes
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-async function addIdea() {
-    const ideaInput = document.getElementById('idea-input');
-    const ideaText = ideaInput.value.trim();
+    // Define your functions and attach them to the window object
+    window.addIdea = async function() {
+        const ideaInput = document.getElementById('idea-input');
+        const ideaText = ideaInput.value.trim();
 
-    if (ideaText) {
-        const newIdea = { text: ideaText, votes: 0 };
-        await db.collection('ideas').add(newIdea);
-        ideaInput.value = '';
-        renderIdeas();
-    }
-}
+        if (ideaText) {
+            const newIdea = { text: ideaText, votes: 0 };
+            await addDoc(collection(db, "ideas"), newIdea);
+            ideaInput.value = '';
+            renderIdeas();
+        }
+    };
 
-async function upvote(id) {
-    const userId = getUserId(); // You need a way to identify users
-    if (!userVotes[userId]) userVotes[userId] = {};
+    window.renderIdeas = async function() {
+        const ideaList = document.getElementById('idea-list');
+        ideaList.innerHTML = '';
 
-    if (!userVotes[userId][id]) {
-        await db.collection('ideas').doc(id).update({
-            votes: firebase.firestore.FieldValue.increment(1)
+        const querySnapshot = await getDocs(collection(db, "ideas"));
+        querySnapshot.forEach((doc) => {
+            const idea = doc.data();
+            const id = doc.id;
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${idea.text} (Votes: ${idea.votes})</span>
+                <div>
+                    <button onclick="upvote('${id}')">Upvote</button>
+                    <button onclick="downvote('${id}')">Downvote</button>
+                    <button onclick="deleteIdea('${id}')">Delete</button> <!-- Add Delete Button -->
+                </div>
+            `;
+            ideaList.appendChild(li);
         });
-        userVotes[userId][id] = true; // Mark this idea as voted by the user
-        renderIdeas();
-    } else {
-        alert("You've already voted for this idea.");
-    }
-}
+    };
 
-async function downvote(id) {
-    const userId = getUserId(); // You need a way to identify users
-    if (!userVotes[userId]) userVotes[userId] = {};
-
-    if (!userVotes[userId][id]) {
-        await db.collection('ideas').doc(id).update({
-            votes: firebase.firestore.FieldValue.increment(-1)
+    window.upvote = async function(id) {
+        const ideaRef = doc(db, "ideas", id);
+        await updateDoc(ideaRef, {
+            votes: increment(1)
         });
-        userVotes[userId][id] = true; // Mark this idea as voted by the user
         renderIdeas();
-    } else {
-        alert("You've already voted for this idea.");
-    }
-}
+    };
 
-async function renderIdeas() {
-    const ideaList = document.getElementById('idea-list');
-    ideaList.innerHTML = '';
+    window.downvote = async function(id) {
+        const ideaRef = doc(db, "ideas", id);
+        await updateDoc(ideaRef, {
+            votes: increment(-1)
+        });
+        renderIdeas();
+    };
 
-    const snapshot = await db.collection('ideas').orderBy('votes', 'desc').get();
-    snapshot.forEach(doc => {
-        const idea = doc.data();
-        const id = doc.id;
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${idea.text} (Votes: ${idea.votes})</span>
-            <div>
-                <button onclick="upvote('${id}')">Upvote</button>
-                <button onclick="downvote('${id}')">Downvote</button>
-            </div>
-        `;
-        ideaList.appendChild(li);
-    });
-}
+    window.deleteIdea = async function(id) {
+        const ideaRef = doc(db, "ideas", id);
+        await deleteDoc(ideaRef); // Delete the document from Firestore
+        renderIdeas(); // Re-render the ideas list
+    };
 
-// Function to get a unique user ID (for demo purposes)
-function getUserId() {
-    // In a real application, you would implement user authentication and get a unique ID
-    return 'user1'; // Replace this with actual user identification logic
-}
-
-// Load ideas on initial load
-renderIdeas();
+    // Load ideas on initial load
+    renderIdeas();
+</script>
