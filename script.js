@@ -33,18 +33,30 @@
     window.renderIdeas = async function() {
         const ideaList = document.getElementById('idea-list');
         ideaList.innerHTML = '';
-
-        const querySnapshot = await getDocs(collection(db, "ideas"));
+        
+        // Fetch ideas and order them by votes in descending order
+        const querySnapshot = await getDocs(
+            collection(db, "ideas")
+        );
+        
+        const ideasArray = [];
         querySnapshot.forEach((doc) => {
             const idea = doc.data();
-            const id = doc.id;
+            ideasArray.push({ id: doc.id, ...idea }); // Push the idea along with its ID
+        });
+        
+        // Sort ideas by votes in descending order
+        ideasArray.sort((a, b) => b.votes - a.votes);
+        
+        // Render sorted ideas
+        ideasArray.forEach((idea) => {
             const li = document.createElement('li');
             li.innerHTML = `
                 <span>${idea.text} (Votes: ${idea.votes})</span>
                 <div>
-                    <button onclick="upvote('${id}')">Upvote</button>
-                    <button onclick="downvote('${id}')">Downvote</button>
-                    <button onclick="deleteIdea('${id}')">Delete</button> <!-- Add Delete Button -->
+                    <button onclick="upvote('${idea.id}')">Upvote</button>
+                    <button onclick="downvote('${idea.id}')">Downvote</button>
+                    <button onclick="deleteIdea('${idea.id}')">Delete</button>
                 </div>
             `;
             ideaList.appendChild(li);
