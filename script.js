@@ -34,12 +34,13 @@
         const ideaList = document.getElementById('idea-list');
         ideaList.innerHTML = '';
         
-        // Fetch ideas and order them by votes in descending order
-        const querySnapshot = await getDocs(
-            collection(db, "ideas")
-        );
+        // Fetch ideas from Firestore
+        const querySnapshot = await getDocs(collection(db, "ideas"));
         
+        // Create an array to hold ideas
         const ideasArray = [];
+        
+        // Populate the array with ideas and their IDs
         querySnapshot.forEach((doc) => {
             const idea = doc.data();
             ideasArray.push({ id: doc.id, ...idea }); // Push the idea along with its ID
