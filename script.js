@@ -32,23 +32,26 @@
     window.renderIdeas = async function() {
         const ideaList = document.getElementById('idea-list');
         ideaList.innerHTML = '';
-        
+
         // Fetch ideas from Firestore
         const querySnapshot = await getDocs(collection(db, "ideas"));
-        
+
         // Create an array to hold ideas
         const ideasArray = [];
-        
+
         // Populate the array with ideas and their IDs
         querySnapshot.forEach((doc) => {
             const idea = doc.data();
             ideasArray.push({ id: doc.id, ...idea }); // Push the idea along with its ID
         });
-        console.log(ideasArray); // Check the fetched ideas
-        
+
+        console.log("Fetched Ideas:", ideasArray); // Log fetched ideas
+
         // Sort ideas by votes in descending order
         ideasArray.sort((a, b) => b.votes - a.votes);
-        
+
+        console.log("Sorted Ideas:", ideasArray); // Log sorted ideas
+
         // Render sorted ideas
         ideasArray.forEach((idea) => {
             const li = document.createElement('li');
@@ -69,7 +72,7 @@
         await updateDoc(ideaRef, {
             votes: increment(1)
         });
-        renderIdeas();
+        renderIdeas(); // Call renderIdeas to refresh the list
     };
 
     window.downvote = async function(id) {
@@ -77,7 +80,7 @@
         await updateDoc(ideaRef, {
             votes: increment(-1)
         });
-        renderIdeas();
+        renderIdeas(); // Call renderIdeas to refresh the list
     };
 
     window.deleteIdea = async function(id) {
