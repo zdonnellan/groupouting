@@ -1,9 +1,7 @@
 <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    // Your web app's Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyCiLppMzhF6qdVNfAl-OU9tsCBXmpODOw4",
         authDomain: "group-outing.firebaseapp.com",
@@ -13,7 +11,6 @@
         appId: "1:819308473489:web:e7035118c4ec461143a330"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -25,36 +22,29 @@
             const newIdea = { text: ideaText, votes: 0 };
             await addDoc(collection(db, "ideas"), newIdea);
             ideaInput.value = '';
-            renderIdeas();
+            renderIdeas(); // Call renderIdeas after adding
         }
     };
 
     window.renderIdeas = async function() {
+        console.log("renderIdeas function called"); // Check if this log appears
         const ideaList = document.getElementById('idea-list');
         ideaList.innerHTML = '';
 
-        // Fetch ideas from Firestore
         const querySnapshot = await getDocs(collection(db, "ideas"));
-
-        // Create an array to hold ideas
         const ideasArray = [];
 
-        // Populate the array with ideas and their IDs
         querySnapshot.forEach((doc) => {
             const idea = doc.data();
-            ideasArray.push({ id: doc.id, ...idea }); // Push the idea along with its ID
+            ideasArray.push({ id: doc.id, ...idea });
         });
 
         console.log("Fetched Ideas:", ideasArray); // Log fetched ideas
 
-        // Sort ideas by votes in descending order
         console.log("Before Sorting:", ideasArray);
         ideasArray.sort((a, b) => b.votes - a.votes);
-        console.log("After Sorting:", ideasArray);
-        
-        console.log("Sorted Ideas:", ideasArray); // Log sorted ideas
+        console.log("After Sorting:", ideasArray); // Log sorted ideas
 
-        // Render sorted ideas
         ideasArray.forEach((idea) => {
             const li = document.createElement('li');
             li.innerHTML = `
@@ -70,6 +60,7 @@
     };
 
     window.upvote = async function(id) {
+        console.log(`Upvoting idea with ID: ${id}`); // Log the ID being upvoted
         const ideaRef = doc(db, "ideas", id);
         await updateDoc(ideaRef, {
             votes: increment(1)
@@ -78,6 +69,7 @@
     };
 
     window.downvote = async function(id) {
+        console.log(`Downvoting idea with ID: ${id}`); // Log the ID being downvoted
         const ideaRef = doc(db, "ideas", id);
         await updateDoc(ideaRef, {
             votes: increment(-1)
@@ -87,7 +79,7 @@
 
     window.deleteIdea = async function(id) {
         const ideaRef = doc(db, "ideas", id);
-        await deleteDoc(ideaRef); // Delete the document from Firestore
+        await deleteDoc(ideaRef);
         renderIdeas(); // Re-render the ideas list
     };
 
