@@ -74,6 +74,12 @@
             renderIdeas();
         };
 
+	window.deleteIdea = async function(id) {
+    	    const ideaRef = doc(db, "ideas", id);
+    	    await deleteDoc(ideaRef); // Delete the document from Firestore
+    	    renderIdeas(); // Re-render the ideas list
+	};
+
         // Load ideas on initial load
         renderIdeas();
     </script>
